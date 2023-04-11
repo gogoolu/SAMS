@@ -2,8 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-int numberOfStd = 0;
+#define LEVEL 5
 
+int numberOfStd = 0;
 typedef struct
 {
     float chinese;
@@ -15,12 +16,7 @@ typedef struct
 } Std;
 Std stds[60]; // 主数组
 /* index
-chinese: 1,
-math: 2,
-English: 3,
-total: 4,
-ID: 5,
-name: 6
+chinese: 1, math: 2, English: 3, total: 4, ID: 5, name: 6
 */
 
 void getHomepage();                        // draw homepage
@@ -32,10 +28,12 @@ int searchBy(int index);                   // searchBy by ID:5, name:6
 int statisticAnaly();                      // analysis statistic
 int getAll();                              // get all student infor list
 void *getMember(Std *student, int member); // get struct member int index ditto
+int compare(void *a, void *b, int type);
+void swap(Std *a, Std *b);
 
 int main()
 {
-    enum SUBJECT
+    enum INDEX
     {
         CH = 1,
         MA,
@@ -130,6 +128,7 @@ int inputRecord()
         scanf("%d", &stds[numberOfStd].math);
         printf("Enter English score:\n");
         scanf("%d", &stds[numberOfStd].english);
+        stds[numberOfStd].total = stds[numberOfStd].chinese + stds[numberOfStd].math + stds[numberOfStd].english;
         numberOfStd++;
     }
 end:
@@ -138,21 +137,103 @@ end:
 
 int getTotalAverage()
 {
+    enum MODE
+    {
+        total,
+        average
+    };
     system("cls");
     int subject = 0;
     int mode = 0;
     printf("get CH:1,MA:2,EN:3,Total:4,ID:5\n");
     scanf("%d", &subject);
-    printf("descending:0, ascending:1\n");
+    printf("total:0, average:1\n");
     scanf("%d", &mode);
+    float score = 0;
     for (int i = 0; i < numberOfStd; ++i)
+        score += *(float *)getMember(&stds[i], subject);
+    if (mode == total)
+        score /= numberOfStd;
+    getSheet();
+    return 0;
+}
+
+int sortBy(int subject, int mode)
+{
+    for (int i = 0; i < numberOfStd - 1; ++i)
+        for (int j = 0; j < numberOfStd - i - 1; ++j)
+            if (compare(getMember(&stds[j], mode), getMember(&stds[j + 1], mode), mode) > 0)
+                swap(&stds[j], &stds[j + 1]);
+}
+
+int searchBy(int index)
+{
+    enum INDEX
     {
-    }
+        ID = 5,
+        NAME
+    };
+    Std *result;
+    void *query_p = NULL;
+    printf("Enter the name or ID you want to query:\n");
+    if (index == ID)
+        scanf("%d", query_p);
+    else if (index == NAME)
+        scanf("%s", query_p);
+    for (int i = 0; i < numberOfStd; ++i)
+        if (!compare(getMember(&stds[i], index), query_p, index))
+        {
+            result = &stds[i];
+            break;
+        }
+    getSheet();
+}
+
+int statisticAnaly()
+{
+    int statistic[LEVEL] = {0};
+    for (int i = 0; i < numberOfStd; ++i)
+        if (stds[i].total > 89 && stds[i].total < 101)
+            statistic[0]++;
+        else if (stds[i].total > 79 && stds[i].total < 90)
+            statistic[1]++;
+        else if (stds[i].total > 69 && stds[i].total < 80)
+            statistic[2]++;
+        else if (stds[i].total > 59 && stds[i].total < 70)
+            statistic[3]++;
+        else if (stds[i].total < 60)
+            statistic[4]++;
+    getSheet();
+}
+
+int getAll()
+{
+    getSheet();
 }
 
 void getSheet()
 {
     ;
+}
+
+int compare(void *a, void *b, int type)
+{
+    int ret = 0;
+    if (type <= 4)
+        ret = (int)(*(float *)a - *(float *)b);
+    else if (type == 5)
+        ret = *(int *)a - *(int *)b;
+    else if (type == 6)
+        ret = strcmp((char *)a, (char *)b);
+    return ret;
+}
+
+void swap(Std *a, Std *b)
+{
+    Std temp;
+    temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
 void *getMember(Std *student, int member)
