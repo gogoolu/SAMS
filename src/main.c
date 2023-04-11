@@ -158,4 +158,11 @@ void getSheet()
 void *getMember(Std *student, int member)
 {
     void *p = NULL;
+    if (member <= 4)
+        p = (float *)student + member - 1;
+    if (member == 5)
+        p = &(student->ID);
+    if (member == 6)
+        p = &(student->name);
+    return p;
 }
