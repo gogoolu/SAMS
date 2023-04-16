@@ -314,11 +314,14 @@ void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, c
             printf("\n");
         }
     }
-    else if (strcmp("struct", type) == 0)
+    else if (strcmp(type, "struct") == 0)
     {
         Std *arr = (Std *)p;
+        for (int i = 0; i < cols; i++)
+            printf("%10s", colheader[i]);
+        printf("\n");
         for (int i = 0; i < rows; ++i)
-            printf("%d %s %f %f %f %f ", arr[i].ID, arr[i].name, arr[i].chinese, arr[i].math, arr[i].english, arr[i].total);
+            printf("%10d %10s %10.2f %10.2f %10.2f %10.2f\n", arr[i].ID, arr[i].name, arr[i].chinese, arr[i].math, arr[i].english, arr[i].total);
     }
     else
         printf("Unsupported type: %s\n", type);
