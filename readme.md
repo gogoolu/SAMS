@@ -32,5 +32,5 @@
   `
 * `void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, char *type);`
 
-除`getHomepage()`函数以外，其他函数只负责操作数据，最终由`getSheet()`函数将数据按格式打印成表格
+除`getHomepage()`函数以外，其他函数只负责操作数据，最终由`getSheet()`函数将数据按格式打印成表格，并且使用了少量泛型编程。
 
