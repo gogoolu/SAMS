@@ -18,6 +18,29 @@ Std stds[60]; // 主数组
 chinese: 1, math: 2, English: 3, total: 4, ID: 5, name: 6
 */
 
+#define DECLARE(type)       \
+int scan_##type(type *p);   \
+
+#define DEFINE(type,FMT)                                \
+int scan_##type(type *p)                                \
+{                                                       \
+    int ret = 0;                                        \
+    do{                                                 \
+        ret = scanf(FMT, p);                            \
+        fflush(stdin);                                  \
+        if(ret != 1)                                    \
+            printf("Invalid input! please re-enter.\n");\
+    } while (ret != 1);                                 \
+    return 0;                                           \
+}                                                       \
+DECLARE(int)
+DECLARE(float)
+DECLARE(char)
+
+DEFINE(int,"%d")
+DEFINE(float,"%f")
+DEFINE(char,"%s")
+
 void getHomepage();                // draw homepage
 int inputRecord();                 // input students infor
 int getTotalAverage();             // index ditto
@@ -29,31 +52,17 @@ void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, c
 void *getMember(Std *student, int member); // get struct member, index ditto
 int compare(void *a, void *b, int type);
 void swap(Std *a, Std *b);
-int myScan(void *p, char *type);
 
-enum INDEX
-{
-    CH = 1,
-    MA,
-    EN,
-    TOTAL,
-    ID,
-    NAME
-};
+enum INDEX { CH = 1, MA, EN, TOTAL, ID, NAME };
 
 int main()
 {
-
-    enum MODE
-    {
-        descending,
-        ascending
-    };
+    enum MODE { descending, ascending };
     while (1)
     {
         getHomepage();
         int index = 0;
-        myScan(&index, "int");
+        scan_int(&index);
         switch (index)
         {
         case 0:
@@ -119,25 +128,24 @@ int inputRecord()
         system("cls");
         int temp = 0;
         printf("Enter ID(Enter -1 to stop input.):\n");
-        myScan(&temp, "int");
+        scan_int(&temp);
         if (temp == -1)
             goto end;
         for (int i = 0; i < numberOfStd; ++i)
-            if (i == *(int *)getMember(&stds[i], ID))
-            {
+            if (i == *(int *)getMember(&stds[i], ID)) {
                 printf("Duplicate ID!\n");
                 system("pause");
                 goto end;
             }
         stds[numberOfStd].ID = temp;
         printf("Enter name:\n");
-        myScan(&stds[numberOfStd].name, "string");
+        scan_char(stds[numberOfStd].name);
         printf("Enter chinese score:\n");
-        myScan(&stds[numberOfStd].chinese, "float");
+        scan_float(&stds[numberOfStd].chinese);
         printf("Enter math score:\n");
-        myScan(&stds[numberOfStd].math, "float");
+        scan_float(&stds[numberOfStd].math);
         printf("Enter English score:\n");
-        myScan(&stds[numberOfStd].english, "float");
+        scan_float(&stds[numberOfStd].english);
         stds[numberOfStd].total = stds[numberOfStd].chinese + stds[numberOfStd].math + stds[numberOfStd].english;
         numberOfStd++;
     }
@@ -147,23 +155,17 @@ end:
 
 int getTotalAverage()
 {
-    if (numberOfStd == 0)
-    {
+    if (numberOfStd == 0) {
         printf("Student information has not been entered yet\n");
         system("pause");
         goto end;
     }
-    enum MODE
-    {
-        total,
-        average
-    };
+    enum MODE { total, average };
     system("cls");
     float score[2][4] = {0};
-    for (int i = 0; i < 4; ++i)
-    {
+    for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < numberOfStd; ++j)
-            score[0][i] = *(float *)getMember(&stds[j], i + 1);
+            score[0][i] += *(float *)getMember(&stds[j], i + 1);
         score[1][i] = score[0][i] / numberOfStd;
     }
 
@@ -176,8 +178,7 @@ end:
 
 int sortBy(int subject, int mode)
 {
-    if (numberOfStd == 0)
-    {
+    if (numberOfStd == 0) {
         printf("Student information has not been entered yet\n");
         system("pause");
         goto end;
@@ -196,39 +197,31 @@ end:
 int searchBy(int index)
 {
     int flag = 0;
-    if (numberOfStd == 0)
-    {
+    if (numberOfStd == 0) {
         printf("Student information has not been entered yet\n");
         system("pause");
         goto end;
     }
-    enum INDEX
-    {
-        ID = 5,
-        NAME
-    };
+    enum INDEX { ID = 5, NAME };
     Std *result = (Std *)malloc(sizeof(Std));
     void *query_p = calloc(25, sizeof(char));
-    if (index == ID)
-    {
+    if (index == ID) {
         printf("Enter the ID you want to query:\n");
-        myScan(query_p, "int");
+        scan_int(query_p);
     }
-    else if (index == NAME)
-    {
+    else if (index == NAME) {
         printf("Enter the name you want to query:\n");
-        myScan(query_p, "string");
+        // myScan(query_p, "string");
+        scan_char(query_p);
     }
     for (int i = 0; i < numberOfStd; ++i)
-        if (!compare(getMember(&stds[i], index), query_p, index))
-        {
+        if (!compare(getMember(&stds[i], index), query_p, index)) {
             result[0] = stds[i];
             flag = 1;
             break;
         }
     free(query_p);
-    if (!flag)
-    {
+    if (!flag) {
         printf("The search object does not exist!\n");
         system("pause");
         goto end;
@@ -242,23 +235,22 @@ end:
 
 int statisticAnaly()
 {
-    if (numberOfStd == 0)
-    {
+    if (numberOfStd == 0) {
         printf("Student information has not been entered yet\n");
         system("pause");
         goto end;
     }
     int statistic[2][LEVEL] = {0};
     for (int i = 0; i < numberOfStd; ++i)
-        if (stds[i].total > 89 && stds[i].total < 101)
+        if (stds[i].total > 269 && stds[i].total < 301)
             statistic[0][0]++;
-        else if (stds[i].total > 79 && stds[i].total < 90)
+        else if (stds[i].total > 239 && stds[i].total < 271)
             statistic[0][1]++;
-        else if (stds[i].total > 69 && stds[i].total < 80)
+        else if (stds[i].total > 209 && stds[i].total < 241)
             statistic[0][2]++;
-        else if (stds[i].total > 59 && stds[i].total < 70)
+        else if (stds[i].total > 179 && stds[i].total < 210)
             statistic[0][3]++;
-        else if (stds[i].total < 60)
+        else if (stds[i].total < 181)
             statistic[0][4]++;
     char *colheader[] = {"excellent", "good", "fair", "pass", "fail"};
     char *rowheader[] = {"number", "ratio"};
@@ -269,8 +261,7 @@ end:
 
 int getAll()
 {
-    if (numberOfStd == 0)
-    {
+    if (numberOfStd == 0) {
         printf("Student information has not been entered yet\n");
         system("pause");
         goto end;
@@ -317,56 +308,49 @@ void *getMember(Std *student, int member)
 void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, char *type)
 {
     // judge type
-    if (strcmp(type, "int") == 0)
-    {
+    if (strcmp(type, "int") == 0) {
         int *arr = (int *)p;
         printf("%10s", "");
         for (int i = 0; i < cols; i++)
             printf("%10s", colheader[i]);
         printf("\n");
         // print rowheader and data
-        for (int i = 0; i < rows; i++)
-        {
+        for (int i = 0; i < rows; i++) {
             printf("%10s", rowheader[i]);
             for (int j = 0; j < cols; j++)
                 printf("%10d", arr[i * cols + j]);
             printf("\n");
         }
     }
-    else if (strcmp(type, "float") == 0)
-    {
+    else if (strcmp(type, "float") == 0) {
         float *arr = (float *)p;
         // print colheader
         printf("%10s", "");
         for (int i = 0; i < cols; i++)
             printf("%10s", colheader[i]);
         printf("\n");
-        for (int i = 0; i < rows; i++)
-        {
+        for (int i = 0; i < rows; i++) {
             printf("%10s", rowheader[i]);
             for (int j = 0; j < cols; j++)
                 printf("%10.2f", arr[i * cols + j]);
             printf("\n");
         }
     }
-    else if (strcmp(type, "char") == 0)
-    {
+    else if (strcmp(type, "char") == 0) {
         char *arr = (char *)p;
         // print colheader
         printf("%10s", "");
         for (int i = 0; i < cols; i++)
             printf("%10s", colheader[i]);
         printf("\n");
-        for (int i = 0; i < rows; i++)
-        {
+        for (int i = 0; i < rows; i++) {
             printf("%10s", rowheader[i]);
             for (int j = 0; j < cols; j++)
                 printf("%10c", arr[i * cols + j]);
             printf("\n");
         }
     }
-    else if (strcmp(type, "struct") == 0)
-    {
+    else if (strcmp(type, "struct") == 0) {
         Std *arr = (Std *)p;
         for (int i = 0; i < cols; i++)
             printf("%10s", colheader[i]);
@@ -377,42 +361,4 @@ void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, c
     else
         printf("Unsupported type: %s\n", type);
     system("pause");
-}
-
-int myScan(void *p, char *type)
-{
-    if (!strcmp(type, "int"))
-    {
-        int ret = 0;
-        do
-        {
-            ret = scanf("%d", (int *)p);
-            fflush(stdin);
-            if (ret != 1)
-                printf("Invalid input! please re-enter.\n");
-        } while (ret != 1);
-    }
-    else if (!strcmp(type, "float"))
-    {
-        int ret = 0;
-        do
-        {
-            ret = scanf("%f", (float *)p);
-            fflush(stdin);
-            if (ret != 1)
-                printf("Invalid input! please re-enter.\n");
-        } while (ret != 1);
-    }
-    else if (!strcmp(type, "string"))
-    {
-        int ret = 0;
-        do
-        {
-            ret = scanf("%s", (char *)p);
-            fflush(stdin);
-            if (ret != 1)
-                printf("Invalid input! please re-enter.\n");
-        } while (ret != 1);
-    }
-    return 0;
 }
