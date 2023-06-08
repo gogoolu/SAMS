@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include "linkedList.h"
 
-#define LEVEL 5
+#define LEVEL 5     // 学生成绩等级数
 int numberOfStd = 0;
 Head* head = NULL;
-
-Std stds[60]; // 主数组
+FILE* fptr = NULL;
 /* index
 chinese: 1, math: 2, English: 3, total: 4, ID: 5, name: 6
 */
@@ -41,18 +40,20 @@ int sortBy(int subject, int mode);  // mode => ascending:1, descending:0, subjec
 int searchBy(int index);            // searchBy by ID:5, name:6
 int statisticAnaly();               // analysis statistic
 int getAll();                       // get all student infor list
-// int fileIO(int mode);               // read file and write file. read: 0, wirte: 1
+int fileIO(int mode);               // read file and write file. read: 0, wirte: 1
 void getSheet(void *p, int rows, int cols, char **colheader, char **rowheader, char *type);
 void *getMember(Std *student, int member);  // get struct member, index ditto
 int compare(void *a, void *b, int type);
 void swap(Std *a, Std *b);
 
 enum INDEX { CH = 1, MA, EN, TOTAL, ID, NAME };
+enum fOpenMode {read, write};
 
 int main()
 {
-    head = initHead();
     enum MODE { ascending, descending};
+    head = initHead();
+    fileIO(read);
     while (1)
     {
         getHomepage();
@@ -91,6 +92,11 @@ int main()
         case 10:
             getAll();
             break;
+        case 11:
+            printf("write file finish\n");
+            break;
+        case 12:
+            getAll();
         default:
             break;
         }
@@ -107,12 +113,13 @@ int inputRecord()
         int temp = 0;
         printf("Enter ID(Enter -1 to stop input.):\n");
         scan_int(&temp);
-        if (temp == -1)
+        if (temp == -1) {
+            fileIO(write);
             goto end;
+        }
         Std newStu;
         addNode(head, &newStu);
         for (int i = 0; i < numberOfStd; ++i)
-            // if (temp == *(int *)getMember(&(getNode(head, i)->data), ID)) {
             if (temp == getNode(head, i)->data.ID) {
                 printf("Duplicate ID!\n");
                 system("pause");
@@ -147,8 +154,8 @@ void getHomepage()
     printf("8.Search by name\n");
     printf("9.Statistic analysis\n");
     printf("10.List record\n");
-    printf("11.Write to a file");
-    printf("12.Read from a file");
+    printf("11.Write to a file\n");
+    printf("12.Read from a file\n");
     printf("0.Exit\n");
     printf("Please enter your choice:\n");
 }
@@ -277,10 +284,41 @@ end:
     return 0;
 }
 
-// int fileIO(int mode)
-// {
-
-// }
+int fileIO(int mode)
+{
+    enum MODE {read, write};
+    Std temp;
+    int ret = 0;
+    if (mode == read) {
+        fptr = fopen("../data/studentList.txt", "r");
+        while (ret != EOF) {
+            fscanf(fptr, "%f", &temp.chinese);
+            fscanf(fptr, "%f", &temp.math);
+            fscanf(fptr, "%f", &temp.english);
+            fscanf(fptr, "%f", &temp.total);
+            fscanf(fptr, "%d", &temp.ID);
+            ret = fscanf(fptr, "%s", temp.name);
+            if (ret == EOF)
+                break;
+            addNode(head, &temp);
+        }
+    }
+    if (mode == write) {
+        fptr = fopen("../data/studentList.txt", "w");
+        for (int i = 0; i < numberOfStd; ++i) {
+            fprintf(fptr, "%.2f ", getNode(head, i)->data.chinese);
+            fprintf(fptr, "%.2f ", getNode(head, i)->data.math);
+            fprintf(fptr, "%.2f ", getNode(head, i)->data.english);
+            fprintf(fptr, "%.2f ", getNode(head, i)->data.total);
+            fprintf(fptr, "%d ", getNode(head, i)->data.ID);
+            fprintf(fptr, "%s\n", getNode(head, i)->data.name);
+        }
+    }
+    numberOfStd = head->lenth;
+    fclose(fptr);
+    fptr = NULL;
+    return 0;
+}
 
 int compare(void *a, void *b, int mode)
 {
